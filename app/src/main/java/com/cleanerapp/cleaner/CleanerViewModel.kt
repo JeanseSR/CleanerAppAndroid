@@ -16,6 +16,9 @@ class CleanerViewModel(application: Application) : AndroidViewModel(application)
     private val clearCacheUseCase = ClearAppCacheUseCase(context)
     private val clearTempUseCase = ClearTempFilesUseCase(context)
     private val clearBrowserUseCase = ClearBrowserDataUseCase(context)
+    private val clearApkUseCase = ClearApkFilesUseCase(context)
+    private val clearThumbnailsUseCase = ClearThumbnailsUseCase(context)
+    private val clearMessagingUseCase = ClearMessagingAppsUseCase(context)
 
     sealed class CleanState {
         object Idle : CleanState()
@@ -34,7 +37,11 @@ class CleanerViewModel(application: Application) : AndroidViewModel(application)
     fun runCleaner(
         clearCache: Boolean = true,
         clearTemp: Boolean = true,
-        clearBrowser: Boolean = true
+        clearBrowser: Boolean = true,
+        clearApk: Boolean = true,
+        clearThumbnails: Boolean = true,
+        clearWhatsApp: Boolean = true,
+        clearTelegram: Boolean = true
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = CleanState.Running
@@ -60,6 +67,27 @@ class CleanerViewModel(application: Application) : AndroidViewModel(application)
                 if (clearBrowser) {
                     val result = clearBrowserUseCase.execute()
                     totalBytes += result.clearedBytes
+                    allErrors += result.errors
+                }
+
+                if (clearApk) {
+                    val result = clearApkUseCase.execute()
+                    totalBytes += result.clearedBytes
+                    filesCount += result.filesCount
+                    allErrors += result.errors
+                }
+
+                if (clearThumbnails) {
+                    val result = clearThumbnailsUseCase.execute()
+                    totalBytes += result.clearedBytes
+                    filesCount += result.filesCount
+                    allErrors += result.errors
+                }
+
+                if (clearWhatsApp || clearTelegram) {
+                    val result = clearMessagingUseCase.execute(clearWhatsApp, clearTelegram)
+                    totalBytes += result.clearedBytes
+                    filesCount += result.filesCount
                     allErrors += result.errors
                 }
 

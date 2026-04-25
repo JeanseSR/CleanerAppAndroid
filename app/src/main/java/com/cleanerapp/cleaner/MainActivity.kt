@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,13 +40,18 @@ fun CleanerScreen(viewModel: CleanerViewModel) {
     var clearCache by remember { mutableStateOf(true) }
     var clearTemp by remember { mutableStateOf(true) }
     var clearBrowser by remember { mutableStateOf(true) }
+    var clearApk by remember { mutableStateOf(true) }
+    var clearThumbnails by remember { mutableStateOf(true) }
+    var clearWhatsApp by remember { mutableStateOf(true) }
+    var clearTelegram by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Cleaner",
@@ -53,12 +60,20 @@ fun CleanerScreen(viewModel: CleanerViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Toggles
+        // Section Général
+        SectionHeader("Général")
         CleanOptionRow("Cache des apps", clearCache) { clearCache = it }
         CleanOptionRow("Fichiers temporaires", clearTemp) { clearTemp = it }
         CleanOptionRow("Données navigateur", clearBrowser) { clearBrowser = it }
+        CleanOptionRow("APK téléchargés", clearApk) { clearApk = it }
+        CleanOptionRow("Miniatures médias", clearThumbnails) { clearThumbnails = it }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Section Messagerie
+        SectionHeader("Messagerie")
+        CleanOptionRow("WhatsApp (envoyés)", clearWhatsApp) { clearWhatsApp = it }
+        CleanOptionRow("Telegram", clearTelegram) { clearTelegram = it }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Bouton principal
         Button(
@@ -66,7 +81,15 @@ fun CleanerScreen(viewModel: CleanerViewModel) {
                 if (state is CleanerViewModel.CleanState.Idle ||
                     state is CleanerViewModel.CleanState.Done ||
                     state is CleanerViewModel.CleanState.Error) {
-                    viewModel.runCleaner(clearCache, clearTemp, clearBrowser)
+                    viewModel.runCleaner(
+                        clearCache = clearCache,
+                        clearTemp = clearTemp,
+                        clearBrowser = clearBrowser,
+                        clearApk = clearApk,
+                        clearThumbnails = clearThumbnails,
+                        clearWhatsApp = clearWhatsApp,
+                        clearTelegram = clearTelegram
+                    )
                 }
             },
             modifier = Modifier
@@ -104,6 +127,19 @@ fun CleanerScreen(viewModel: CleanerViewModel) {
             else -> {}
         }
     }
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    )
+    HorizontalDivider()
 }
 
 @Composable
